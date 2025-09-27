@@ -1,35 +1,47 @@
-#' Fit a Linear Regression Model
+#' Linear Regression Model
 #'
-#' This function fits a linear regression model using the least squares method
-#' and returns an object of class \code{linreg} with coefficients, fitted values,
-#' residuals, and other statistics.
+#' This function fits a linear regression model using QR Decomposition.
+#' Returns an object of class \code{linreg} with coefficients, fitted values,
+#' residuals, variance-covariance matrix, and other statistics.
 #'
-#' @importFrom stats model.matrix fitted residuals sd pt
-#' @importFrom stats resid pt
-#' @importFrom ggplot2 ggplot aes geom_point geom_smooth geom_hline theme_classic ggtitle xlab ylab
+#' @importFrom stats model.matrix pt symnum
 #' @importFrom patchwork wrap_plots
-#' @importFrom stats symnum
 #'
 #' @param formula A formula describing the model (e.g., y ~ x1 + x2).
 #' @param data A data frame containing the variables in the formula.
 #'
-#' @return An object of class \code{linreg} with the following components:
-#' \item{coefficients}{Estimated regression coefficients}
-#' \item{fitted}{Fitted values}
-#' \item{residuals}{Residuals}
-#' \item{df}{Degrees of freedom}
-#' \item{residual_variance}{Residual variance estimate}
-#' \item{var_coefficients}{Variance-covariance matrix of coefficients}
-#' \item{t_values}{t-statistics of the coefficients}
-#' \item{formula}{The model formula}
+#' @return An object of class \code{linreg} containing:
+#' \describe{
+#'   \item{call}{The matched function call.}
+#'   \item{coefficients}{Estimated regression coefficients.}
+#'   \item{fitted}{Fitted values.}
+#'   \item{residuals}{Residuals.}
+#'   \item{df}{Residual degrees of freedom.}
+#'   \item{residual_variance}{Estimated variance of residuals.}
+#'   \item{var_coefficients}{Variance-covariance matrix of coefficients.}
+#'   \item{t_values}{t-statistics for coefficients.}
+#'   \item{formula}{The model formula.}
+#' }
+#'
+#' @examples
+#' data(iris)
+#' model <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, data = iris)
+#' print(model)
+#' summary(model)
+#' plot(model)
 #'
 #' @export
 linreg <- function(formula, data){
   x <- model.matrix(formula, data)
   y <- data[[all.vars(formula)[1]]]
 
+  # QR decomposition
+  qr_decomp <- qr(x)
+  Q <- qr.Q(qr_decomp)
+  R <- qr.R(qr_decomp)
+
   #Calculate regression coefficient
-  beta_hat <- solve(t(x) %*% x) %*% t(x) %*% y
+  beta_hat <- solve(R) %*% t(Q) %*% y
 
   #Fitted value
   y_hat <- x %*% beta_hat
@@ -42,7 +54,7 @@ linreg <- function(formula, data){
   p <- ncol(x)
   df <- n-p
 
-  #Residual variance
+  #residuals variance
   sigma_Sq_hat <- as.numeric(t(e_hat) %*% e_hat)/ df
 
   #Variance of the regression coefficient
@@ -68,6 +80,11 @@ linreg <- function(formula, data){
 
 }
 
+#' Print method
+#'
+#' @param x An onject from linreg class
+#' @param ... Additional arguments
+#'
 #' @export
 #' @method  print linreg
 print.linreg <- function(x, ...){
@@ -84,12 +101,27 @@ print.linreg <- function(x, ...){
   print(values)
 }
 
+#' Residual method
+#'
+#' @param x An object from linreg class
+#' @param ... Additional arguments
+#'
 #' @export
-#' @method resid linreg
-resid.linreg <- function(object, ...){
-  object$residuals
+resid <- function(x, ...) {
+  UseMethod("resid")
 }
 
+#' @export
+#' @method resid linreg
+resid.linreg <- function(x, ...){
+  x$residuals
+}
+
+#' Coefficient method
+#'
+#' @param object An object from linreg class
+#' @param ... Additional arguments
+#'
 #' @export
 #' @method  coef linreg
 coef.linreg <- function(object, ...){
@@ -98,6 +130,12 @@ coef.linreg <- function(object, ...){
   values
 }
 
+#' Predict method
+#'
+#' @param x An object for which predictions are to be made.
+#' @param ... Additional arguments
+#'
+#' @export
 pred <- function(x, ...) {
   UseMethod("pred")
 }
@@ -108,6 +146,11 @@ pred.linreg <- function(x, ...){
   x$fitted
 }
 
+#' Summary method
+#'
+#' @param object An object from linreg class
+#' @param ... Additional arguments
+#'
 #' @export
 #' @method summary linreg
 summary.linreg <- function(object, ...){
@@ -137,32 +180,37 @@ summary.linreg <- function(object, ...){
 
 }
 
+#' Plot method
+#'
+#' @param x An object from linreg class
+#' @param ... Additional arguments
+#'
 #' @export
 #' @method plot linreg
 plot.linreg <- function(x, ...) {
 
   fr <- data.frame(fitted = x$fitted, residuals = x$residuals)
 
-  plot1 <- ggplot(fr, aes(x = fitted, y = residuals)) +
-            geom_point(shape = 1) +
-            geom_smooth(method = "lm", se = TRUE, color = "red") +
-            geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-            theme_classic() +
-            ggtitle("Residuals vs Fitted") +
-            xlab(paste("Fitted values\n", deparse(x$formula))) +
-            ylab("Residuals")
+  plot1 <- ggplot2::ggplot(fr, ggplot2::aes(x = fr$fitted, y = fr$residuals)) +
+            ggplot2::geom_point(shape = 1) +
+            ggplot2::geom_smooth(method = "lm", se = TRUE, color = "red") +
+            ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+            ggplot2::theme_classic() +
+            ggplot2::ggtitle("Residuals vs Fitted") +
+            ggplot2::xlab(paste("Fitted values\n", deparse(x$formula))) +
+            ggplot2::ylab("Residuals")
 
-  sqrt_sr <- sqrt(abs(x$residuals / sd(x$residuals)))
+  sqrt_sr <- sqrt(abs(x$residuals / stats::sd(x$residuals)))
   fitted <- x$fitted
 
-  plot2 <- ggplot() +
-            geom_point(aes(x = fitted, y = sqrt_sr), shape = 1) +
-            geom_smooth(method = "lm", se = TRUE, color = "red") +
-            geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-            theme_classic() +
-            ggtitle("Scale-Location") +
-            xlab(paste("Fitted values\n", deparse(x$formula))) +
-            ylab(expression(sqrt("|Standardized residuals|")))
+  plot2 <- ggplot2::ggplot() +
+            ggplot2::geom_point(ggplot2::aes(x = fitted, y = sqrt_sr), shape = 1) +
+            ggplot2::geom_smooth(method = "lm", se = TRUE, color = "red") +
+            ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+            ggplot2::theme_classic() +
+            ggplot2::ggtitle("Scale-Location") +
+            ggplot2::xlab(paste("Fitted values\n", deparse(x$formula))) +
+            ggplot2::ylab(expression(sqrt("|Standardized Residuals|")))
 
   combined_plot  <- plot1 / plot2
   combined_plot

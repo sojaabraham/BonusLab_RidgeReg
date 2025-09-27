@@ -1,16 +1,23 @@
 Package: LinearRegression
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Implementation of linear regression model using QR decomposition
 Version: 0.1.0
 Authors@R: c(
     person(
       "Soja", "Abraham",
       email = "sojab160@student.liu.se",
       role = c("aut", "cre")
+    ),
+    person(
+      "Saranya", "Sankar",
+      email = "sarsa971@student.liu.se",
+      role = c("aut")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: This package is an implementation of linear regression model 
+      using QR decomposition.It also also implement an object oriented system
+      to handle special functions such as print(), plot(), resid(), pred(), 
+      coef() and summary().
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -20,5 +27,8 @@ Imports:
     patchwork,
     stats
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr

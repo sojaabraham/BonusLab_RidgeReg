@@ -1,0 +1,54 @@
+---
+title: "Linear Regression Model Using QR Decomposition"
+output:
+  rmarkdown::html_document:
+    code_folding: hide
+    theme: lumen
+vignette: >
+  %\VignetteIndexEntry{LinearRegression: Full Walkthrough}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+# Full Walkthrough of LinearRegression Package
+
+This vignette provides a **comprehensive walkthrough** of the `LinearRegression` package.In this package, we get to see the 
+implementation of linear regression model using QR decomposition.
+
+We will also implement an object oriented system to handle special 
+functions such as print(), plot(), resid(), pred(), coef() and summary(). 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Load required packages
+library(LinearRegression)
+
+# Fit the model
+linreg_mod <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, data = iris)
+
+# Plots
+cat("Plot Method\nPlots Residuals Vs Fitted plot and Scale-Location plot using ggplot2")
+plot(linreg_mod)
+
+# Print the model
+cat("Print Method\nPrint out the coefficients and coefficient names, similar as done by the lm class")
+print(linreg_mod)
+
+# Coefficients
+cat("Coefficients Method\nReturn the coefficients as a named vector")
+print(coef(linreg_mod))
+
+# Predictions
+cat("Predictions Metod\nReturn the predicted values")
+pred_vals <- pred(linreg_mod)
+print(head(pred_vals))
+
+# Residuals
+cat("Residuals Method\nReturn the vector of residuals")
+res_vals <- resid(linreg_mod)
+print(head(res_vals))
+
+# Summary
+cat("Summary Method\nReturn a similar printout as printed for lm objects")
+summary(linreg_mod)
+

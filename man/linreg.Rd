@@ -2,7 +2,7 @@
 % Please edit documentation in R/linreg.R
 \name{linreg}
 \alias{linreg}
-\title{Fit a Linear Regression Model}
+\title{Linear Regression Model}
 \usage{
 linreg(formula, data)
 }
@@ -12,18 +12,29 @@ linreg(formula, data)
 \item{data}{A data frame containing the variables in the formula.}
 }
 \value{
-An object of class \code{linreg} with the following components:
-\item{coefficients}{Estimated regression coefficients}
-\item{fitted}{Fitted values}
-\item{residuals}{Residuals}
-\item{df}{Degrees of freedom}
-\item{residual_variance}{Residual variance estimate}
-\item{var_coefficients}{Variance-covariance matrix of coefficients}
-\item{t_values}{t-statistics of the coefficients}
-\item{formula}{The model formula}
+An object of class \code{linreg} containing:
+\describe{
+  \item{call}{The matched function call.}
+  \item{coefficients}{Estimated regression coefficients.}
+  \item{fitted}{Fitted values.}
+  \item{residuals}{Residuals.}
+  \item{df}{Residual degrees of freedom.}
+  \item{residual_variance}{Estimated variance of residuals.}
+  \item{var_coefficients}{Variance-covariance matrix of coefficients.}
+  \item{t_values}{t-statistics for coefficients.}
+  \item{formula}{The model formula.}
+}
 }
 \description{
-This function fits a linear regression model using the least squares method
-and returns an object of class \code{linreg} with coefficients, fitted values,
-residuals, and other statistics.
+This function fits a linear regression model using QR Decomposition.
+Returns an object of class \code{linreg} with coefficients, fitted values,
+residuals, variance-covariance matrix, and other statistics.
+}
+\examples{
+data(iris)
+model <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, data = iris)
+print(model)
+summary(model)
+plot(model)
+
 }
