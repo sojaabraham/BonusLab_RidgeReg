@@ -5,7 +5,7 @@
 [![R-CMD-check](https://github.com/sojaabraham/Lab_4/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sojaabraham/Lab_4/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of this package is to implementation of linear regression model 
+The goal of this package is to implement linear regression model 
 using QR decomposition.
 We will also implement an object oriented system to handle special functions 
 such as print(), plot(), resid(), pred(), coef() and summary().

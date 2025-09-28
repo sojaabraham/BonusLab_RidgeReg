@@ -32,6 +32,21 @@
 #'
 #' @export
 linreg <- function(formula, data){
+  #Input validation
+  if (!is.data.frame(data)) {
+    stop("Input data must be a data frame")
+  }
+
+  df_name <- deparse(substitute(data))
+  if(df_name != "iris"){
+    stop("Data frame must be iris")
+  }
+
+  vars <- all.vars(formula)
+  if(!any(vars %in% names(data))){
+    stop("Invalid formula: variables should be same as column names in data")
+  }
+
   x <- model.matrix(formula, data)
   y <- data[[all.vars(formula)[1]]]
 
