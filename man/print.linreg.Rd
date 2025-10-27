@@ -7,7 +7,7 @@
 \method{print}{linreg}(x, ...)
 }
 \arguments{
-\item{x}{An onject from linreg class}
+\item{x}{An object from linreg class}
 
 \item{...}{Additional arguments}
 }

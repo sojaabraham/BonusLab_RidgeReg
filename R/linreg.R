@@ -50,7 +50,7 @@ linreg <- function(formula, data){
   x <- model.matrix(formula, data)
   y <- data[[all.vars(formula)[1]]]
 
-  # QR decomposition
+  #QR decomposition
   qr_decomp <- qr(x)
   Q <- qr.Q(qr_decomp)
   R <- qr.R(qr_decomp)
@@ -97,7 +97,7 @@ linreg <- function(formula, data){
 
 #' Print method
 #'
-#' @param x An onject from linreg class
+#' @param x An object from linreg class
 #' @param ... Additional arguments
 #'
 #' @export
