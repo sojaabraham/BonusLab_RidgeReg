@@ -1,0 +1,137 @@
+---
+title: "Predictive Modeling with Ridge Regression Model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Predictive Modeling with Ridge Regression Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = TRUE)
+library(caret)
+library(mlbench)
+library(dplyr)
+library(ggplot2)
+library(LinearRegression)
+```
+
+## 1.Data Preparation 
+
+```{r}
+# Load BostonHousing data
+data(BostonHousing, package = "mlbench")
+set.seed(123)
+
+# Split data: 70% train, 30% test
+trainIndex <- createDataPartition(BostonHousing$medv, p = 0.7, list = FALSE)
+trainData <- BostonHousing[trainIndex, ]
+testData <- BostonHousing[-trainIndex, ]
+```
+
+## 2.Linear Regression Models
+
+### 2.1 Standard Linear Regression Model
+```{r}
+lm_model <- train(medv ~ ., data = trainData, method = "lm")
+```
+
+### 2.2 Linear Regression with forward selection
+```{r}
+lm_forward <- step(
+  lm(medv ~ 1, data = trainData),        
+  scope = list(
+    lower = ~1,                           
+    upper = ~ .                          
+  ),
+  direction = "forward"
+)
+```
+
+## 3.Evaluate Performance on Training Data
+
+```{r}
+#Predictions
+train_pred_lm <- predict(lm_model, newdata = trainData)
+train_pred_forward <- predict(lm_forward, newdata = trainData)
+
+#Compute RMSE
+rmse_lm <- RMSE(train_pred_lm, trainData$medv)
+rmse_forward <- RMSE(train_pred_forward, trainData$medv)
+rmse_lm
+rmse_forward
+```
+
+## 4.Ridge Regression
+
+```{r}
+library(caret)
+
+#10-fold cross-validation
+set.seed(123)
+train_control <- trainControl(method = "cv", number = 10)
+
+#Define lambdas
+lambdas <- c(0.01, 0.1, 1, 10, 100)
+
+#Create caret-compatible custom model
+ridgeModel <- list(
+  type = "Regression",
+  library = "LinearRegression",
+  loop = NULL,
+  parameters = data.frame(parameter = "lambda", class = "numeric", label = "Ridge Lambda"),
+  grid = function(x, y, len = NULL, search = "grid") data.frame(lambda = lambdas),
+  fit = function(x, y, wts, param, ...) {
+    df <- data.frame(y = y, x)
+    ridgereg(y ~ ., data = df, lambda = param$lambda)
+  },
+  predict = function(modelFit, newdata, submodels = NULL) {
+    if (!"predict.ridgereg" %in% methods("predict")) {
+      beta <- coef(modelFit)
+      X <- model.matrix(~ ., data = newdata)
+      return(X %*% beta)
+    } else {
+      predict(modelFit, newdata)
+    }
+  },
+  prob = NULL
+)
+
+#Train the model
+set.seed(123)
+ridge_caret <- train(
+  x = trainData %>% select(-medv),
+  y = trainData$medv,
+  method = ridgeModel,
+  trControl = train_control,
+  tuneGrid = data.frame(lambda = lambdas)
+)
+
+ridge_caret$bestTune
+```
+
+## 5.Evaluate all models on the test dataset
+
+```{r}
+test_pred_lm <- predict(lm_model, newdata = testData)
+test_pred_forward <- predict(lm_forward, newdata = testData)
+test_pred_ridge <- predict(ridge_caret, newdata = testData)
+
+rmse_test_lm <- RMSE(test_pred_lm, testData$medv)
+rmse_test_forward <- RMSE(test_pred_forward, testData$medv)
+rmse_test_ridge <- RMSE(test_pred_ridge, testData$medv)
+
+rmse_test_lm
+rmse_test_forward
+rmse_test_ridge
+```
+
+## 6. Conclusion
+
+The comparison of RMSE values indicates which modeling approach performs best on the BostonHousing dataset:\n
+
+* Standard linear regression provides a baseline performance.\n
+* Forward selection may improve performance if irrelevant covariates exist.\n
+* Ridge regression helps regularize the model, especially for highly correlated predictors, and may reduce overfitting.\n
+
+

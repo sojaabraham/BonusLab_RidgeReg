@@ -33,17 +33,6 @@ ridgereg <- function(formula, data, lambda){
     stop("Input data must be a data frame")
   }
 
-  df_name <- deparse(substitute(data))
-  if(df_name != "iris"){
-    stop("Data frame must be iris")
-  }
-
-  vars <- all.vars(formula)
-  missing_vars <- setdiff(vars, names(data))
-  if(length(missing_vars) > 0){
-    stop("Invalid formula: variables should be same as column names in data")
-  }
-
   if (!is.numeric(lambda) || lambda < 0){
     stop("lambda must be a non-negative numeric value")
   }
@@ -124,13 +113,14 @@ print.ridgereg <- function(x, ...){
 #'
 #' @return  A numeric vector of predicted values.
 #'
+#' @importFrom stats coef
 #' @export
 predict.ridgereg <- function(object, newdata = NULL, ...) {
   if (is.null(newdata)) {
     return(object$fitted)
   }
-  X_new <- model.matrix(object$formula, data = newdata)
-  return(as.vector(X_new %*% object$coefficients))
+  X <- model.matrix(~ ., data = newdata)
+  as.vector(X %*% coef(object))
 }
 
 #' Coefficient method

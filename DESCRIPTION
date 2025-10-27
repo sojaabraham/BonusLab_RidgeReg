@@ -1,6 +1,6 @@
 Package: LinearRegression
 Type: Package
-Title: Implementation of linear and ridge regression model using QR decomposition
+Title: Implementation of ridge regression model using QR decomposition
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -14,10 +14,9 @@ Authors@R: c(
       role = c("aut")
     )
   )
-Description: This package is an implementation of linear and ridge regression model 
+Description: This package is an implementation of ridge regression model 
       using QR decomposition.It also implement an object oriented system
-      to handle special functions such as print(), plot(), resid(), pred(), 
-      coef() and summary().
+      to handle special functions such as print(), predict(), and coef().
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -25,11 +24,15 @@ RoxygenNote: 7.3.3
 Imports:
     ggplot2,
     patchwork,
-    stats
+    stats,
+    dplyr,
+    nycflights13
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    MASS
+    MASS,
+    caret,
+    mlbench
 Config/testthat/edition: 3
 VignetteBuilder: knitr

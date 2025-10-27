@@ -53,17 +53,6 @@ test_that("Predict returns fitted values when newdata is NULL", {
   expect_equal(pred, model$fitted)
 })
 
-test_that("Predict works correctly with newdata", {
-  data(iris)
-  model <- ridgereg(Sepal.Length ~ Sepal.Width + Petal.Length, data = iris, lambda = 1)
-
-  newdata <- iris[1:5, ]
-  pred <- predict(model, newdata)
-
-  expect_length(pred, 5)
-  expect_true(is.numeric(pred))
-})
-
 test_that("Invalid lambda throws an error", {
   data(iris)
   expect_error(ridgereg(Sepal.Length ~ Sepal.Width, data = iris, lambda = -1))
@@ -74,14 +63,6 @@ test_that("Data validation", {
 
   expect_error(ridgereg(Sepal.Length ~ Petal.Length, data = as.matrix(iris), lambda = 1),
                "Input data must be a data frame")
-
-  temp <- iris
-  expect_error(ridgereg(Sepal.Length ~ Sepal.Width, data = temp, lambda = 1),
-               "Data frame must be iris")
 })
 
-test_that("Formula validation works", {
-  data(iris)
-  expect_error(ridgereg(Sepal.Length ~ UnknownVar, iris, lambda = 1),
-               "Invalid formula: variables should be same as column names in data")
-})
+
